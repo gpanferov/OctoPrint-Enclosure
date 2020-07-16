@@ -3,6 +3,11 @@ import struct
 import sys
 import spidev
 
+# Raspberry Pi hardware SPI configuration.
+spi = spidev.SpiDev()
+spi.open(0,0)
+spi.max_speed_hz=1000000
+
 # Function to read SPI data from MCP3008 chip
 # Channel must be an integer 0-7
 def ReadChannel(channel):
@@ -53,16 +58,11 @@ def main():
     if not 0 <= SPI_CHANNEL <= 7:
         raise ValueError("Invalid channel")
 
-   # Raspberry Pi hardware SPI configuration.
-    spi = spidev.SpiDev()
-    spi.open(0,0)
-    spi.max_speed_hz=1000000
-
     # Define sensor channels
 
     temp_level = ReadChannel(SPI_CHANNEL)
-    temp_volts = ConvertVolts(temp0_level,2)
-    temp       = ConvertTemp(temp0_level,2)
+    temp_volts = ConvertVolts(temp_level,2)
+    temp       = ConvertTemp(temp_level,2)
 
     print('{0:0.1f}'.format(temp))
 
