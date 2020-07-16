@@ -810,6 +810,9 @@ class EnclosurePlugin(octoprint.plugin.StartupPlugin, octoprint.plugin.TemplateP
                 elif sensor['temp_sensor_type'] == "mcp9808":
                     temp = self.read_mcp_temp(sensor['temp_sensor_address'])
                     hum = 0
+                elif sensor['temp_sensor_type'] == "mcp3008":
+                    temp = self.read_mcp3008_temp(sensor['temp_sensor_address'])
+                    hum = 0
                 else:
                     self._logger.info("temp_sensor_type no match")
                     temp = None
@@ -864,6 +867,22 @@ class EnclosurePlugin(octoprint.plugin.StartupPlugin, octoprint.plugin.TemplateP
             stdout, _ = proc.communicate()
             if self._settings.get(["debug_temperature_log"]) is True:
                 self._logger.debug("MCP9808 result: %s", stdout)
+            return self.to_float(stdout.strip())
+        except Exception as ex:
+            self._logger.info("Failed to execute python scripts, try disabling use SUDO on advanced section.")
+            self.log_error(ex)
+            return 0
+
+    def read_mcp3008_temp(self, address):
+        try:
+            script = os.path.dirname(os.path.realpath(__file__)) + "/mcp3008.py"
+            args = ["python", script, str(address)]
+            if  self._settings.get(["debug_temperature_log"]) is True:
+                self._logger.debug("Temperature MCP3008 cmd: %s", " ".join(args))
+            proc = Popen(args, stdout=PIPE)
+            stdout, _ = proc.communicate()
+            if  self._settings.get(["debug_temperature_log"]) is True:
+                self._logger.debug("MCP3008 result: %s", stdout)
             return self.to_float(stdout.strip())
         except Exception as ex:
             self._logger.info("Failed to execute python scripts, try disabling use SUDO on advanced section.")
